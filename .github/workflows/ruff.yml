@@ -1,0 +1,23 @@
+name: Lint with ruff
+
+on: ['pull_request', 'push']
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Configure Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python3 -m pip install -r extra/requirements.txt
+    - name: Install lint dependencies
+      run: |
+        python3 -m pip install -r extra/requirements-lint.txt
+    - name: Lint with Ruff
+      run: |
+        python3 -m ruff check --output-format=github .
+      continue-on-error: true
