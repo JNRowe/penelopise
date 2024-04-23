@@ -23,3 +23,7 @@ jobs:
     - name: Run tests
       run: |
         python3 -m pytest tests
+    - name: Lint with Ruff
+      run: |
+        python3 -m ruff check --output-format=github .
+      continue-on-error: true
