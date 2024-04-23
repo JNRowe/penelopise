@@ -1,0 +1,14 @@
+name: Lint with ruff
+
+on: ['pull_request', 'push']
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: astral-sh/ruff-action@v3
+      with:
+        src: >-
+          tests/test_upstream_examples.py
+          todo_txt.py
