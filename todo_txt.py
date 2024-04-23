@@ -52,7 +52,7 @@ def parse_data(s: str) -> Entry:
         creation_date = None
     cs = []
     ps = []
-    for t, v in re.findall(r"(?<=\s)([@\+])(\S+)", s):
+    for t, v in re.findall(r"\B([@\+])(\S+)\b", s):
         if t == "@":
             cs.append(Context(v))
         elif t == "+":
