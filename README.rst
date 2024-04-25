@@ -27,6 +27,29 @@ experience I value from taskwarrior along for the ride.  What this means to me:
 ``todo.txt`` provides most of this as a base data format.  Let’s make it
 happen!
 
+Required features
+-----------------
+
+Body text
+'''''''''
+
+I realised very early on that I need some degree of multi-line todo items,
+which ``todo.txt`` doesn’t provide.  This isn’t a showstopper however, as it is
+really easy to implement in a compliant manner.  The format allows for
+user-defined key/value pairs, so we can simply add a ``body:<file>`` element to
+an entry.
+
+This method has added advantages too:
+
+* We can navigate using ``gf`` from within vim_.
+* We aren’t restricted by file type or content, for example
+  ``image:<file>`` or ``json:<file>``.  Easy access via ``<C-r><C-f>`` while
+  editing.
+* Multiple items can reference the same supporting data, which would require
+  duplication with simple multi-line items.
+* A self-standardised key set makes it easy to support in an external UI.
+
 .. _taskwarrior: https://taskwarrior.org/
 .. _changed the backend: https://taskwarrior.org/docs/upgrade-3/
 .. _todo.txt: https://todotxt.org/
+.. _vim: https://www.vim.org/
