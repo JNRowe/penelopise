@@ -6,6 +6,8 @@ import string
 from attrs import define
 
 
+_ISO_DATE = r"\d{4}-\d{2}-\d{2}"
+
 Priority = enum.IntEnum("Priority", list(string.ascii_uppercase))
 
 
@@ -32,8 +34,7 @@ class Entry:
 
 
 def parse_entry(text: str) -> Entry:
-    d_str = r"\d{4}-\d{2}-\d{2}"
-    if m := re.match(rf"x (?:({d_str})(?: {d_str})?)?", text):
+    if m := re.match(f"x (?:({_ISO_DATE})(?: {_ISO_DATE})?)?", text):
         complete = True
         if m.lastindex:
             completion_date = datetime.date.fromisoformat(m.group(1))
@@ -46,7 +47,7 @@ def parse_entry(text: str) -> Entry:
         prio = Priority[m.group(1)]
     else:
         prio = None
-    if m := re.match(rf"(?:x {d_str} |\([A-Z]\) )?({d_str}) ", text):
+    if m := re.match(rf"(?:x {_ISO_DATE} |\([A-Z]\) )?({_ISO_DATE}) ", text):
         creation_date = datetime.date.fromisoformat(m.group(1))
     else:
         creation_date = None
