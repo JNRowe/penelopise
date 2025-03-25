@@ -40,7 +40,7 @@ TEST_RESULTS = [
 
 @pytest.mark.parametrize("input_, expected", zip(TEST_DATA, TEST_RESULTS))
 def test_basic(input_, expected):
-    parsed = todo_txt.parse_data(input_)
+    parsed = todo_txt.parse_entry(input_)
     assert parsed == expected
 
 
@@ -60,7 +60,7 @@ def test_project_filter():
 
 # Rule 1
 def test_priority():
-    parsed = todo_txt.parse_data("(A) Call Mom")
+    parsed = todo_txt.parse_entry("(A) Call Mom")
     assert parsed.priority == todo_txt.Priority.A
 
 
@@ -73,7 +73,7 @@ def test_priority():
     ],
 )
 def test_no_priority(input_):
-    assert todo_txt.parse_data(input_).priority is None
+    assert todo_txt.parse_entry(input_).priority is None
 
 
 # Rule 2
@@ -85,16 +85,16 @@ def test_no_priority(input_):
     ],
 )
 def test_creation_date(input_, expected):
-    assert todo_txt.parse_data(input_).creation_date == expected
+    assert todo_txt.parse_entry(input_).creation_date == expected
 
 
 def test_no_creation_date():
-    assert todo_txt.parse_data("(A) Call Mom 2011-03-02").creation_date is None
+    assert todo_txt.parse_entry("(A) Call Mom 2011-03-02").creation_date is None
 
 
 # Rule 3
 def test_projects_and_contexts():
-    parsed = todo_txt.parse_data(
+    parsed = todo_txt.parse_entry(
         "(A) Call Mom +Family +PeaceLoveAndHappiness @iphone @phone"
     )
     assert todo_txt.Project("Family") in parsed.projects
@@ -105,13 +105,13 @@ def test_projects_and_contexts():
 
 def test_no_contexts():
     assert (
-        todo_txt.parse_data("Email SoAndSo at soandso@example.com").contexts
+        todo_txt.parse_entry("Email SoAndSo at soandso@example.com").contexts
         == []
     )
 
 
 def test_no_projectss():
-    assert todo_txt.parse_data("Learn how to add 2+2").projects == []
+    assert todo_txt.parse_entry("Learn how to add 2+2").projects == []
 
 
 # Complete tasks
@@ -119,7 +119,7 @@ def test_no_projectss():
 
 # Rule 1
 def test_complete():
-    assert todo_txt.parse_data("x 2011-03-03 Call Mom").complete is True
+    assert todo_txt.parse_entry("x 2011-03-03 Call Mom").complete is True
 
 
 @pytest.mark.parametrize(
@@ -131,12 +131,12 @@ def test_complete():
     ],
 )
 def test_not_complete(input_):
-    assert todo_txt.parse_data(input_).complete is False
+    assert todo_txt.parse_entry(input_).complete is False
 
 
 # Rule 2
 def test_completion_date():
-    parsed = todo_txt.parse_data(
+    parsed = todo_txt.parse_entry(
         "x 2011-03-02 2011-03-01 Review Tim's pull request +TodoTxtTouch @github"
     )
     assert parsed.complete is True
