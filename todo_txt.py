@@ -32,7 +32,7 @@ class Entry:
     attrs: dict[str, str | datetime.date] = {}
 
 
-def parse_data(text: str) -> Entry:
+def parse_entry(text: str) -> Entry:
     d_str = r"\d{4}-\d{2}-\d{2}"
     if m := re.match(rf"x (?:({d_str})(?: {d_str})?)?", text):
         complete = True
@@ -70,3 +70,8 @@ def parse_data(text: str) -> Entry:
     return Entry(
         text, complete, completion_date, creation_date, prio, cs, ps, kws
     )
+
+
+def parse_file(file: str) -> list[Entry]:
+    with open(file) as fh:
+        return [parse_entry(line.rstrip()) for line in fh if line.strip()]
