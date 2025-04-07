@@ -5,7 +5,7 @@ import datetime
 
 import pytest
 
-import todo_txt
+import penelopise
 
 TEST_DATA = [
     "(A) Thank Mom for the meatballs @phone",
@@ -14,24 +14,24 @@ TEST_DATA = [
     "@GroceryStore Eskimo pies",
 ]
 TEST_RESULTS = [
-    todo_txt.Entry(
+    penelopise.Entry(
         text="(A) Thank Mom for the meatballs @phone",
-        priority=todo_txt.Priority.A,
-        contexts=[todo_txt.Context(name="phone")],
+        priority=penelopise.Priority.A,
+        contexts=[penelopise.Context(name="phone")],
     ),
-    todo_txt.Entry(
+    penelopise.Entry(
         text="(B) Schedule Goodwill pickup +GarageSale @phone",
-        priority=todo_txt.Priority.B,
-        contexts=[todo_txt.Context(name="phone")],
-        projects=[todo_txt.Project(name="GarageSale")],
+        priority=penelopise.Priority.B,
+        contexts=[penelopise.Context(name="phone")],
+        projects=[penelopise.Project(name="GarageSale")],
     ),
-    todo_txt.Entry(
+    penelopise.Entry(
         text="Post signs around the neighborhood +GarageSale",
-        projects=[todo_txt.Project(name="GarageSale")],
+        projects=[penelopise.Project(name="GarageSale")],
     ),
-    todo_txt.Entry(
+    penelopise.Entry(
         text="@GroceryStore Eskimo pies",
-        contexts=[todo_txt.Context(name="GroceryStore")],
+        contexts=[penelopise.Context(name="GroceryStore")],
     ),
 ]
 
@@ -40,28 +40,30 @@ TEST_RESULTS = [
 
 @pytest.mark.parametrize("input_, expected", zip(TEST_DATA, TEST_RESULTS))
 def test_basic(input_, expected):
-    parsed = todo_txt.parse_entry(input_)
+    parsed = penelopise.parse_entry(input_)
     assert parsed == expected
 
 
 def test_context_filter():
     result = [
-        e for e in TEST_RESULTS if todo_txt.Context("phone") in e.contexts
+        e for e in TEST_RESULTS if penelopise.Context("phone") in e.contexts
     ]
     assert len(result) == 2
 
 
 def test_project_filter():
     result = [
-        e for e in TEST_RESULTS if todo_txt.Project("GarageSale") in e.projects
+        e
+        for e in TEST_RESULTS
+        if penelopise.Project("GarageSale") in e.projects
     ]
     assert len(result) == 2
 
 
 # Rule 1
 def test_priority():
-    parsed = todo_txt.parse_entry("(A) Call Mom")
-    assert parsed.priority == todo_txt.Priority.A
+    parsed = penelopise.parse_entry("(A) Call Mom")
+    assert parsed.priority == penelopise.Priority.A
 
 
 @pytest.mark.parametrize(
@@ -73,7 +75,7 @@ def test_priority():
     ],
 )
 def test_no_priority(input_):
-    assert todo_txt.parse_entry(input_).priority is None
+    assert penelopise.parse_entry(input_).priority is None
 
 
 # Rule 2
@@ -85,33 +87,35 @@ def test_no_priority(input_):
     ],
 )
 def test_creation_date(input_, expected):
-    assert todo_txt.parse_entry(input_).creation_date == expected
+    assert penelopise.parse_entry(input_).creation_date == expected
 
 
 def test_no_creation_date():
-    assert todo_txt.parse_entry("(A) Call Mom 2011-03-02").creation_date is None
+    assert (
+        penelopise.parse_entry("(A) Call Mom 2011-03-02").creation_date is None
+    )
 
 
 # Rule 3
 def test_projects_and_contexts():
-    parsed = todo_txt.parse_entry(
+    parsed = penelopise.parse_entry(
         "(A) Call Mom +Family +PeaceLoveAndHappiness @iphone @phone"
     )
-    assert todo_txt.Project("Family") in parsed.projects
-    assert todo_txt.Project("PeaceLoveAndHappiness") in parsed.projects
-    assert todo_txt.Context("iphone") in parsed.contexts
-    assert todo_txt.Context("phone") in parsed.contexts
+    assert penelopise.Project("Family") in parsed.projects
+    assert penelopise.Project("PeaceLoveAndHappiness") in parsed.projects
+    assert penelopise.Context("iphone") in parsed.contexts
+    assert penelopise.Context("phone") in parsed.contexts
 
 
 def test_no_contexts():
     assert (
-        todo_txt.parse_entry("Email SoAndSo at soandso@example.com").contexts
+        penelopise.parse_entry("Email SoAndSo at soandso@example.com").contexts
         == []
     )
 
 
 def test_no_projects():
-    assert todo_txt.parse_entry("Learn how to add 2+2").projects == []
+    assert penelopise.parse_entry("Learn how to add 2+2").projects == []
 
 
 # Complete tasks
@@ -119,7 +123,7 @@ def test_no_projects():
 
 # Rule 1
 def test_complete():
-    assert todo_txt.parse_entry("x 2011-03-03 Call Mom").complete is True
+    assert penelopise.parse_entry("x 2011-03-03 Call Mom").complete is True
 
 
 @pytest.mark.parametrize(
@@ -131,14 +135,14 @@ def test_complete():
     ],
 )
 def test_not_complete(input_):
-    parsed = todo_txt.parse_entry(input_)
+    parsed = penelopise.parse_entry(input_)
     assert parsed.complete is False
     assert parsed.completion_date is None
 
 
 # Rule 2
 def test_completion_date():
-    parsed = todo_txt.parse_entry(
+    parsed = penelopise.parse_entry(
         "x 2011-03-02 2011-03-01 Review Tim's pull request +TodoTxtTouch @github"
     )
     assert parsed.complete is True
