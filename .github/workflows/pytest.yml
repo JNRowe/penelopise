@@ -10,16 +10,16 @@ jobs:
         python-version: ['3.11', '3.12', '3.13']
     steps:
     - uses: actions/checkout@v4
-    - name: Configure Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
       with:
+        cache-dependency-glob: "pyproject.toml"
+        enable-cache: true
         python-version: ${{ matrix.python-version }}
+        version: 0.6.12
     - name: Install package and dependencies
       run: |
-        python3 -m pip install --editable .
-    - name: Install test dependencies
-      run: |
-        python3 -m pip install 'pytest>=8.0'
+        uv sync --dev
     - name: Run tests
       run: |
-        python3 -m pytest tests
+        uv run pytest tests
