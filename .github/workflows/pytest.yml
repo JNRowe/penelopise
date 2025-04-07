@@ -14,12 +14,12 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
+    - name: Install package and dependencies
       run: |
-        python3 -m pip install -r extra/requirements.txt
+        python3 -m pip install --editable .
     - name: Install test dependencies
       run: |
-        python3 -m pip install -r extra/requirements-test.txt
+        python3 -m pip install 'pytest>=8.0'
     - name: Run tests
       run: |
         python3 -m pytest tests
