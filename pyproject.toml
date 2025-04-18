@@ -32,6 +32,7 @@ classifiers = [
 dependencies = ["attrs>=23.2.0"]
 
 [project.urls]
+Documentation = "https://jnrowe.github.io/penelopise/"
 "Source code" = "https://github.com/JNRowe/penelopise"
 
 [build-system]
@@ -40,6 +41,7 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = ["pytest>=8.0"]
+doc = ["sphinx>=8.0"]
 lint = ["ruff>=0.4"]
 
 [tool.pytest.ini_options]
