@@ -13,6 +13,12 @@ TEST_DATA = [
     "Post signs around the neighborhood +GarageSale",
     "@GroceryStore Eskimo pies",
 ]
+"""List of example ``todo.txt`` entries used as test input data extracted from
+the documentation_.
+
+.. _documentation: https://github.com/todotxt/todo.txt
+"""
+
 TEST_RESULTS = [
     penelopise.Entry(
         text="(A) Thank Mom for the meatballs @phone",
@@ -34,17 +40,20 @@ TEST_RESULTS = [
         contexts=[penelopise.Context(name="GroceryStore")],
     ),
 ]
+"""List of expected parsed results corresponding to ``TEST_DATA``."""
 
 # Incomplete Tasks
 
 
 @pytest.mark.parametrize("input_, expected", zip(TEST_DATA, TEST_RESULTS))
 def test_basic(input_, expected):
+    """Test basic parsing of entries and comparison with expected results."""
     parsed = penelopise.parse_entry(input_)
     assert parsed == expected
 
 
 def test_context_filter():
+    """Test filtering entries by context."""
     result = [
         e for e in TEST_RESULTS if penelopise.Context("phone") in e.contexts
     ]
@@ -52,6 +61,7 @@ def test_context_filter():
 
 
 def test_project_filter():
+    """Test filtering entries by project."""
     result = [
         e
         for e in TEST_RESULTS
@@ -62,6 +72,11 @@ def test_project_filter():
 
 # Rule 1
 def test_priority():
+    """Test parsing of priority in entries.
+
+    Asserts:
+        The parsed priority of the entry is 'A'.
+    """
     parsed = penelopise.parse_entry("(A) Call Mom")
     assert parsed.priority == penelopise.Priority.A
 
@@ -75,6 +90,7 @@ def test_priority():
     ],
 )
 def test_no_priority(input_):
+    """Test entries without valid priority."""
     assert penelopise.parse_entry(input_).priority is None
 
 
@@ -87,10 +103,12 @@ def test_no_priority(input_):
     ],
 )
 def test_creation_date(input_, expected):
+    """Test parsing of creation date in entries."""
     assert penelopise.parse_entry(input_).creation_date == expected
 
 
 def test_no_creation_date():
+    """Test entries without a creation date."""
     assert (
         penelopise.parse_entry("(A) Call Mom 2011-03-02").creation_date is None
     )
@@ -98,6 +116,7 @@ def test_no_creation_date():
 
 # Rule 3
 def test_projects_and_contexts():
+    """Test parsing of projects and contexts in entries."""
     parsed = penelopise.parse_entry(
         "(A) Call Mom +Family +PeaceLoveAndHappiness @iphone @phone"
     )
@@ -108,6 +127,7 @@ def test_projects_and_contexts():
 
 
 def test_no_contexts():
+    """Test entries without any contexts."""
     assert (
         penelopise.parse_entry("Email SoAndSo at soandso@example.com").contexts
         == []
@@ -115,6 +135,7 @@ def test_no_contexts():
 
 
 def test_no_projects():
+    """Test entries without any projects."""
     assert penelopise.parse_entry("Learn how to add 2+2").projects == []
 
 
@@ -123,6 +144,7 @@ def test_no_projects():
 
 # Rule 1
 def test_complete():
+    """Test parsing of completed tasks."""
     assert penelopise.parse_entry("x 2011-03-03 Call Mom").complete is True
 
 
@@ -135,6 +157,7 @@ def test_complete():
     ],
 )
 def test_not_complete(input_):
+    """Test entries that are not marked as complete."""
     parsed = penelopise.parse_entry(input_)
     assert parsed.complete is False
     assert parsed.completion_date is None
@@ -142,6 +165,7 @@ def test_not_complete(input_):
 
 # Rule 2
 def test_completion_date():
+    """Test parsing of completion date in completed tasks."""
     parsed = penelopise.parse_entry(
         "x 2011-03-02 2011-03-01 Review Tim's pull request +TodoTxtTouch @github"
     )
