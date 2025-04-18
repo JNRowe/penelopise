@@ -8,11 +8,6 @@ import re
 import typing
 
 
-# Regular expression pattern for matching a string that *may* be an ISO-8601
-# date.  This clearly doesn't validate a string, but gets us close enough to
-# descend in to date parsing mode.
-_ISO_DATE = r"\d{4}-\d{2}-\d{2}"
-
 Priority = enum.IntEnum(
     "Priority", "Z Y X W V U T S R Q P O N M L K J I H G F E D C B A"
 )
@@ -70,18 +65,31 @@ class Entry:
 
     def __post_init__(self) -> None:
         """Parse a singular task string."""
-        if m := re.match(
-            rf"x (?:\([A-Z]\) )?(?:({_ISO_DATE}) (?: {_ISO_DATE})?)?", self.text
-        ):
+        offset = 0
+        if self.text.startswith("x "):
             self.complete = True
-            if m.lastindex:
-                self.completion_date = datetime.date.fromisoformat(m.group(1))
+            offset += 2
         if m := re.match(r"(?:x )?\(([A-Z])\) ", self.text):
             self.priority = Priority[m.group(1)]
-        if m := re.match(
-            rf"(?:x {_ISO_DATE} |\([A-Z]\) )?({_ISO_DATE}) ", self.text
-        ):
-            self.creation_date = datetime.date.fromisoformat(m.group(1))
+            offset += 4
+        if self.complete:
+            try:
+                self.completion_date = datetime.date.fromisoformat(
+                    self.text[offset : offset + 10]
+                )
+                offset += 11
+                _ = datetime.date.fromisoformat(
+                    self.text[offset + 11 : offset + 21]
+                )
+                offset += 11
+            except ValueError:
+                pass
+        try:
+            self.creation_date = datetime.date.fromisoformat(
+                self.text[offset : offset + 10]
+            )
+        except ValueError:
+            pass
         for t, v in re.findall(r"\B([@\+])(\S+)\b", self.text):
             if t == "@":
                 self.contexts.append(Context(v))
