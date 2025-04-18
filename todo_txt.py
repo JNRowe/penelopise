@@ -35,11 +35,12 @@ class Entry:
 
 
 def parse_entry(text: str) -> Entry:
-    if m := re.match(f"x (?:({_ISO_DATE})(?: {_ISO_DATE})?)?", text):
+    if text.startswith("x "):
         complete = True
-        if m.lastindex:
-            completion_date = datetime.date.fromisoformat(m.group(1))
-        else:
+        try:
+            completion_date = datetime.date.fromisoformat(text[2:12])
+            _ = datetime.date.fromisoformat(text[13:23])
+        except ValueError:
             completion_date = None
     else:
         complete = False
@@ -48,9 +49,14 @@ def parse_entry(text: str) -> Entry:
         prio = Priority[m.group(1)]
     else:
         prio = None
-    if m := re.match(rf"(?:x {_ISO_DATE} |\([A-Z]\) )?({_ISO_DATE}) ", text):
-        creation_date = datetime.date.fromisoformat(m.group(1))
-    else:
+    try:
+        offset = 0
+        if complete:
+            offset += 2
+        if prio:
+            offset += 4
+        creation_date = datetime.date.fromisoformat(text[offset : offset + 10])
+    except ValueError:
         creation_date = None
     cs = []
     ps = []
