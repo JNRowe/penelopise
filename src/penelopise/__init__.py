@@ -4,6 +4,7 @@ import dataclasses
 import datetime
 import enum
 import re
+import typing
 
 
 # Regular expression pattern for matching a string that *may* be an ISO-8601
@@ -22,28 +23,19 @@ characters ``A``, ``B``, and ``C`` in to a sort of high, medium, and low
 arrangement respectively.
 """
 
+Context = typing.NewType("Context", str)
+"""Represent a context associated with a task.
 
-@dataclasses.dataclass(frozen=True)
-class Context:
-    """Represent a context associated with a task.
+Commonly contexts are used to specify locations associated with a task, but they
+can simply be thought of as a keyword to make searching across tasks simpler.
+"""
 
-    Commonly contexts are used to specify locations associated with a task, but
-    they can simply be thought of as a keyword to make searching across tasks
-    simpler.
-    """
+Project = typing.NewType("Project", str)
+"""Represent a project associated with a task.
 
-    name: str
-
-
-@dataclasses.dataclass(frozen=True)
-class Project:
-    """Represent a project associated with a task.
-
-    Projects are denoted by the ``+`` symbol in task entry text and are used to
-    group tasks under a common goal or initiative.
-    """
-
-    name: str
+Projects are denoted by the ``+`` symbol in task entry text and are used to
+group tasks under a common goal or initiative.
+"""
 
 
 @dataclasses.dataclass
