@@ -29,7 +29,6 @@ classifiers = [
   "Topic :: Text Processing :: Filters",
   "Topic :: Text Processing :: Markup",
 ]
-dependencies = ["attrs>=23.2.0"]
 
 [project.urls]
 Documentation = "https://jnrowe.github.io/penelopise/"

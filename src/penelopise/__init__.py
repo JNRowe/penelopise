@@ -1,10 +1,9 @@
 """penelopise - Basic parsing for ``todo.txt`` files."""
 
+import dataclasses
 import datetime
 import enum
 import re
-
-from attrs import define
 
 
 # Regular expression pattern for matching a string that *may* be an ISO-8601
@@ -24,7 +23,7 @@ arrangement respectively.
 """
 
 
-@define
+@dataclasses.dataclass(frozen=True)
 class Context:
     """Represent a context associated with a task.
 
@@ -36,7 +35,7 @@ class Context:
     name: str
 
 
-@define
+@dataclasses.dataclass(frozen=True)
 class Project:
     """Represent a project associated with a task.
 
@@ -47,7 +46,7 @@ class Project:
     name: str
 
 
-@define
+@dataclasses.dataclass
 class Entry:
     """Represent a task.
 
@@ -57,13 +56,15 @@ class Entry:
     """
 
     text: str
-    complete: bool = False
-    completion_date: datetime.date | None = None
-    creation_date: datetime.date | None = None
-    priority: Priority | None = None
-    contexts: list[Context] = []
-    projects: list[Project] = []
-    attrs: dict[str, str | datetime.date] = {}
+    complete: bool = dataclasses.field(default=False)
+    completion_date: datetime.date | None = dataclasses.field(default=None)
+    creation_date: datetime.date | None = dataclasses.field(default=None)
+    priority: Priority | None = dataclasses.field(default=None)
+    contexts: list[Context] = dataclasses.field(default_factory=list)
+    projects: list[Project] = dataclasses.field(default_factory=list)
+    attrs: dict[str, str | datetime.date] = dataclasses.field(
+        default_factory=dict
+    )
 
 
 def parse_entry(text: str) -> Entry:
