@@ -94,14 +94,22 @@ class Entry:
                 self.attrs[k] = v
 
 
-def parse_file(file: str) -> list[Entry]:
-    """Parse a file containing tasks in ``todo.txt`` format.
+class Entries(list):
+    """Represent a task list.
 
-    Args:
-        file: The path to the file containing task entries.
-
-    Returns:
-        The list of `Entry` objects contained in the given file.
+    This is simply a convenience class for holding a collection of ``Entry``
+    objects, and a space to tie custom methods for operating on them.
     """
-    with open(file) as fh:
-        return [Entry(line.rstrip()) for line in fh if line.strip()]
+
+    @classmethod
+    def parse_file(cls, file: str) -> typing.Self:
+        """Parse a file containing tasks in ``todo.txt`` format.
+
+        Args:
+            file: The path to the file containing task entries.
+
+        Returns:
+            The list of `Entry` objects contained in the given file.
+        """
+        with open(file) as fh:
+            return cls(Entry(line.rstrip()) for line in fh if line.strip())
