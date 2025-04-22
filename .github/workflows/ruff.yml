@@ -10,5 +10,5 @@ jobs:
     - uses: astral-sh/ruff-action@v3
       with:
         src: >-
-          tests/test_upstream_examples.py
-          todo_txt.py
+          src/
+          tests/

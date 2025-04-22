@@ -1,3 +1,5 @@
+"""penelopise - Basic parsing for ``todo.txt`` files."""
+
 import datetime
 import enum
 import re
@@ -5,25 +7,55 @@ import re
 from attrs import define
 
 
+# Regular expression pattern for matching a string that *may* be an ISO-8601
+# date.  This clearly doesn't validate a string, but gets us close enough to
+# descend in to date parsing mode.
 _ISO_DATE = r"\d{4}-\d{2}-\d{2}"
 
 Priority = enum.IntEnum(
     "Priority", "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z"
 )
+Priority.__doc__ = """Enumeration for representing task priority levels.
+
+The ``todo.txt`` specification declares priorities to be any uppercase ASCII
+character.  Much of the tooling around the format, however, special cases the
+characters ``A``, ``B``, and ``C`` in to a sort of high, medium, and low
+arrangement respectively.
+"""
 
 
 @define
 class Context:
+    """Represent a context associated with a task.
+
+    Commonly contexts are used to specify locations associated with a task, but
+    they can simply be thought of as a keyword to make searching across tasks
+    simpler.
+    """
+
     name: str
 
 
 @define
 class Project:
+    """Represent a project associated with a task.
+
+    Projects are denoted by the ``+`` symbol in task entry text and are used to
+    group tasks under a common goal or initiative.
+    """
+
     name: str
 
 
 @define
 class Entry:
+    """Represent a task.
+
+    Encapsulates the complete details of a task; full text description,
+    completion status, priority, creation and completion dates, contexts, and
+    projects.
+    """
+
     text: str
     complete: bool = False
     completion_date: datetime.date | None = None
@@ -35,6 +67,14 @@ class Entry:
 
 
 def parse_entry(text: str) -> Entry:
+    """Parse a singular task string.
+
+    Args:
+        text: The text string representing the task entry.
+
+    Returns:
+        An ``Entry`` representing parsed task details.
+    """
     if m := re.match(f"x (?:({_ISO_DATE})(?: {_ISO_DATE})?)?", text):
         complete = True
         if m.lastindex:
@@ -74,5 +114,13 @@ def parse_entry(text: str) -> Entry:
 
 
 def parse_file(file: str) -> list[Entry]:
+    """Parse a file containing tasks in ``todo.txt`` format.
+
+    Args:
+        file: The path to the file containing task entries.
+
+    Returns:
+        The list of `Entry` objects contained in the given file.
+    """
     with open(file) as fh:
         return [parse_entry(line.rstrip()) for line in fh if line.strip()]
