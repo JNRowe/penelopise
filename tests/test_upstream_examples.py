@@ -22,18 +22,18 @@ the documentation_.
 TEST_RESULTS = [
     {
         "priority": penelopise.Priority.A,
-        "contexts": [penelopise.Context(name="phone")],
+        "contexts": ["phone"],
     },
     {
         "priority": penelopise.Priority.B,
-        "contexts": [penelopise.Context(name="phone")],
-        "projects": [penelopise.Project(name="GarageSale")],
+        "contexts": ["phone"],
+        "projects": ["GarageSale"],
     },
     {
-        "projects": [penelopise.Project(name="GarageSale")],
+        "projects": ["GarageSale"],
     },
     {
-        "contexts": [penelopise.Context(name="GroceryStore")],
+        "contexts": ["GroceryStore"],
     },
 ]
 """List of expected parsed results corresponding to ``TEST_DATA``."""
