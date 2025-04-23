@@ -65,38 +65,38 @@ class Entry:
 
     def __post_init__(self) -> None:
         """Parse a singular task string."""
+        words = re.split(r"\s", self.text)
         offset = 0
-        if self.text.startswith("x "):
+        if words[0] == "x":
             self.complete = True
-            offset += 2
-        a, b, c, d = self.text[offset : offset + 4]
-        if (a, c, d) == ("(", ")", " ") and b.isupper():
-            self.priority = Priority[b]
-            offset += 4
+            offset += 1
+        try:
+            a, b, c = words[offset]
+            if (a, c) == ("(", ")") and b.isupper():
+                self.priority = Priority[b]
+                offset += 1
+        except ValueError:
+            pass
         if self.complete:
             try:
                 self.completion_date = datetime.date.fromisoformat(
-                    self.text[offset : offset + 10]
+                    words[offset]
                 )
-                offset += 11
-                _ = datetime.date.fromisoformat(
-                    self.text[offset + 11 : offset + 21]
-                )
-                offset += 11
+                offset += 1
+                _ = datetime.date.fromisoformat(words[offset + 1])
+                offset += 1
             except ValueError:
                 pass
         try:
-            self.creation_date = datetime.date.fromisoformat(
-                self.text[offset : offset + 10]
-            )
+            self.creation_date = datetime.date.fromisoformat(words[offset])
         except ValueError:
             pass
-        for t, v in re.findall(r"\B([@\+])(\S+)\b", self.text):
-            if t == "@":
-                self.contexts.append(Context(v))
+        for chunk in (w for w in words if w.startswith(("@", "+"))):
+            if chunk[0] == "@":
+                self.contexts.append(Context(chunk[1:]))
             else:
-                self.projects.append(Project(v))
-        for k, v in re.findall(r"([^\s:]+):([^\s:]+)", self.text):
+                self.projects.append(Project(chunk[1:]))
+        for k, v in (w.split(":") for w in words if ":" in w):
             if k == "pri":
                 self.priority = Priority[v]
             else:
