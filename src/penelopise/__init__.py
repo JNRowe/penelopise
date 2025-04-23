@@ -69,8 +69,9 @@ class Entry:
         if self.text.startswith("x "):
             self.complete = True
             offset += 2
-        if m := re.match(r"(?:x )?\(([A-Z])\) ", self.text):
-            self.priority = Priority[m.group(1)]
+        a, b, c, d = self.text[offset : offset + 4]
+        if (a, c, d) == ("(", ")", " ") and b.isupper():
+            self.priority = Priority[b]
             offset += 4
         if self.complete:
             try:
