@@ -48,10 +48,29 @@ class Entry:
     """
 
     def __init__(self, text: str) -> None:
-        self.text = text
+        self._text = text
 
     def __repr__(self) -> str:
         return f"{self.__class__.__qualname__}({self.text!r})"
+
+    @property
+    def text(self) -> str:
+        return self._text
+
+    @text.setter
+    def text(self, value: str) -> None:
+        if value != self._text:
+            self._text = value
+            for attr in (
+                "complete",
+                "completion_date",
+                "creation_date",
+                "priority",
+                "contexts",
+                "projects",
+                "attrs",
+            ):
+                self.__dict__.pop(attr, None)
 
     @functools.cached_property
     def complete(self) -> bool:
