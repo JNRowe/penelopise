@@ -42,9 +42,8 @@ TEST_RESULTS = [
 ]
 """List of expected parsed results corresponding to ``TEST_DATA``."""
 
-# Incomplete Tasks
 
-
+# Incomplete Tasks {{{
 @pytest.mark.parametrize("input_, expected", zip(TEST_DATA, TEST_RESULTS))
 def test_basic(input_, expected):
     """Test basic parsing of entries and comparison with expected results."""
@@ -70,7 +69,7 @@ def test_project_filter():
     assert len(result) == 2
 
 
-# Rule 1
+# Rule 1 {{{2
 def test_priority():
     """Test parsing of priority in entries.
 
@@ -94,7 +93,10 @@ def test_no_priority(input_):
     assert penelopise.parse_entry(input_).priority is None
 
 
-# Rule 2
+# }}}2
+
+
+# Rule 2 {{{2
 @pytest.mark.parametrize(
     "input_, expected",
     [
@@ -114,7 +116,10 @@ def test_no_creation_date():
     )
 
 
-# Rule 3
+# }}}2
+
+
+# Rule 3 {{{2
 def test_projects_and_contexts():
     """Test parsing of projects and contexts in entries."""
     parsed = penelopise.parse_entry(
@@ -139,10 +144,13 @@ def test_no_projects():
     assert penelopise.parse_entry("Learn how to add 2+2").projects == []
 
 
-# Complete tasks
+# }}}2
+
+# }}}
 
 
-# Rule 1
+# Complete tasks {{{
+# Rule 1 {{{2
 def test_complete():
     """Test parsing of completed tasks."""
     assert penelopise.parse_entry("x 2011-03-03 Call Mom").complete is True
@@ -163,7 +171,10 @@ def test_not_complete(input_):
     assert parsed.completion_date is None
 
 
-# Rule 2
+# }}}2
+
+
+# Rule 2 {{{2
 def test_completion_date():
     """Test parsing of completion date in completed tasks."""
     parsed = penelopise.parse_entry(
@@ -171,3 +182,7 @@ def test_completion_date():
     )
     assert parsed.complete is True
     assert parsed.completion_date == datetime.date(2011, 3, 2)
+
+
+# }}}2
+# }}}
