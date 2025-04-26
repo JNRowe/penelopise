@@ -3,6 +3,7 @@
 import dataclasses
 import datetime
 import enum
+import functools
 import re
 import typing
 
@@ -39,6 +40,7 @@ group tasks under a common goal or initiative.
 
 
 @dataclasses.dataclass
+@functools.total_ordering
 class Entry:
     """Represent a task.
 
@@ -92,6 +94,21 @@ class Entry:
                 except ValueError:
                     pass
                 self.attrs[k] = v
+
+    def __eq__(self, other):
+        if not hasattr(other, "text"):
+            return NotImplemented
+        return self.text == other.text
+
+    def __lt__(self, other):
+        if not hasattr(other, "priority"):
+            return NotImplemented
+        if self.priority and other.priority:
+            return self.priority < other.priority
+        elif self.priority is None:
+            return True
+        else:
+            return False
 
 
 class Entries(list):
