@@ -1,14 +1,14 @@
 name: Lint with ruff
 
-on: ['pull_request', 'push']
+on: ["pull_request", "push"]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: astral-sh/ruff-action@v3
-      with:
-        src: >-
-          src/
-          tests/
+      - uses: actions/checkout@v4
+      - uses: astral-sh/ruff-action@v3
+        with:
+          src: >-
+            src/
+            tests/
