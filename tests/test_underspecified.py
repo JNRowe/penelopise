@@ -4,6 +4,11 @@ import penelopise
 
 
 # Complete tasks {{{
+def test_complete_without_date():
+    """Test parsing of completed tasks without date stamp."""
+    assert penelopise.Entry("x shake bugs free").complete is True
+
+
 # Rule 2 {{{2
 @pytest.mark.parametrize(
     "input_",
