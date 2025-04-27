@@ -70,7 +70,9 @@ class Entry:
 
     def __post_init__(self) -> None:
         """Parse a singular task string."""
-        if m := re.match(f"x (?:({_ISO_DATE})(?: {_ISO_DATE})?)?", self.text):
+        if m := re.match(
+            rf"x (?:\([A-Z]\) )?(?:({_ISO_DATE}) (?: {_ISO_DATE})?)?", self.text
+        ):
             self.complete = True
             if m.lastindex:
                 self.completion_date = datetime.date.fromisoformat(m.group(1))
