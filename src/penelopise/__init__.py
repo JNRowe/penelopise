@@ -3,7 +3,9 @@
 import dataclasses
 import datetime
 import enum
+import functools
 import re
+import typing
 
 
 # Regular expression pattern for matching a string that *may* be an ISO-8601
@@ -22,31 +24,23 @@ characters ``A``, ``B``, and ``C`` in to a sort of high, medium, and low
 arrangement respectively.
 """
 
+Context = typing.NewType("Context", str)
+"""Represent a context associated with a task.
 
-@dataclasses.dataclass(frozen=True)
-class Context:
-    """Represent a context associated with a task.
+Commonly contexts are used to specify locations associated with a task, but they
+can simply be thought of as a keyword to make searching across tasks simpler.
+"""
 
-    Commonly contexts are used to specify locations associated with a task, but
-    they can simply be thought of as a keyword to make searching across tasks
-    simpler.
-    """
+Project = typing.NewType("Project", str)
+"""Represent a project associated with a task.
 
-    name: str
-
-
-@dataclasses.dataclass(frozen=True)
-class Project:
-    """Represent a project associated with a task.
-
-    Projects are denoted by the ``+`` symbol in task entry text and are used to
-    group tasks under a common goal or initiative.
-    """
-
-    name: str
+Projects are denoted by the ``+`` symbol in task entry text and are used to
+group tasks under a common goal or initiative.
+"""
 
 
 @dataclasses.dataclass
+@functools.total_ordering
 class Entry:
     """Represent a task.
 
@@ -56,72 +50,83 @@ class Entry:
     """
 
     text: str
-    complete: bool = dataclasses.field(default=False)
-    completion_date: datetime.date | None = dataclasses.field(default=None)
-    creation_date: datetime.date | None = dataclasses.field(default=None)
-    priority: Priority | None = dataclasses.field(default=None)
-    contexts: list[Context] = dataclasses.field(default_factory=list)
-    projects: list[Project] = dataclasses.field(default_factory=list)
+    complete: bool = dataclasses.field(default=False, init=False)
+    completion_date: datetime.date | None = dataclasses.field(
+        default=None, init=False
+    )
+    creation_date: datetime.date | None = dataclasses.field(
+        default=None, init=False
+    )
+    priority: Priority | None = dataclasses.field(default=None, init=False)
+    contexts: list[Context] = dataclasses.field(
+        default_factory=list, init=False
+    )
+    projects: list[Project] = dataclasses.field(
+        default_factory=list, init=False
+    )
     attrs: dict[str, str | datetime.date] = dataclasses.field(
-        default_factory=dict
+        default_factory=dict, init=False
     )
 
+    def __post_init__(self) -> None:
+        """Parse a singular task string."""
+        if m := re.match(f"x (?:({_ISO_DATE})(?: {_ISO_DATE})?)?", self.text):
+            self.complete = True
+            if m.lastindex:
+                self.completion_date = datetime.date.fromisoformat(m.group(1))
+        if m := re.match(r"(?:x )?\(([A-Z])\) ", self.text):
+            self.priority = Priority[m.group(1)]
+        if m := re.match(
+            rf"(?:x {_ISO_DATE} |\([A-Z]\) )?({_ISO_DATE}) ", self.text
+        ):
+            self.creation_date = datetime.date.fromisoformat(m.group(1))
+        for t, v in re.findall(r"\B([@\+])(\S+)\b", self.text):
+            if t == "@":
+                self.contexts.append(Context(v))
+            else:
+                self.projects.append(Project(v))
+        for k, v in re.findall(r"([^\s:]+):([^\s:]+)", self.text):
+            if k == "pri":
+                self.priority = Priority[v]
+            else:
+                try:
+                    v = datetime.date.fromisoformat(v)
+                except ValueError:
+                    pass
+                self.attrs[k] = v
 
-def parse_entry(text: str) -> Entry:
-    """Parse a singular task string.
+    def __eq__(self, other):
+        if not hasattr(other, "text"):
+            return NotImplemented
+        return self.text == other.text
 
-    Args:
-        text: The text string representing the task entry.
+    def __lt__(self, other):
+        if not hasattr(other, "priority"):
+            return NotImplemented
+        if self.priority and other.priority:
+            return self.priority < other.priority
+        elif self.priority is None:
+            return True
+        else:
+            return False
 
-    Returns:
-        An ``Entry`` representing parsed task details.
+
+class Entries(list):
+    """Represent a task list.
+
+    This is simply a convenience class for holding a collection of ``Entry``
+    objects, and a space to tie custom methods for operating on them.
     """
-    if m := re.match(f"x (?:({_ISO_DATE})(?: {_ISO_DATE})?)?", text):
-        complete = True
-        if m.lastindex:
-            completion_date = datetime.date.fromisoformat(m.group(1))
-        else:
-            completion_date = None
-    else:
-        complete = False
-        completion_date = None
-    if m := re.match(r"(?:x )?\(([A-Z])\) ", text):
-        prio = Priority[m.group(1)]
-    else:
-        prio = None
-    if m := re.match(rf"(?:x {_ISO_DATE} |\([A-Z]\) )?({_ISO_DATE}) ", text):
-        creation_date = datetime.date.fromisoformat(m.group(1))
-    else:
-        creation_date = None
-    cs = []
-    ps = []
-    for t, v in re.findall(r"\B([@\+])(\S+)\b", text):
-        if t == "@":
-            cs.append(Context(v))
-        else:
-            ps.append(Project(v))
-    kws: dict[str, str | datetime.date] = {}
-    for k, v in re.findall(r"([^\s:]+):([^\s:]+)", text):
-        if k == "pri":
-            prio = Priority[v]
-        else:
-            try:
-                kws[k] = datetime.date.fromisoformat(v)
-            except ValueError:
-                kws[k] = v
-    return Entry(
-        text, complete, completion_date, creation_date, prio, cs, ps, kws
-    )
 
+    @classmethod
+    def parse_file(cls, file: str) -> typing.Self:
+        """Parse a file containing tasks in ``todo.txt`` format.
 
-def parse_file(file: str) -> list[Entry]:
-    """Parse a file containing tasks in ``todo.txt`` format.
+        Args:
+            file: The path to the file containing task entries.
 
-    Args:
-        file: The path to the file containing task entries.
-
-    Returns:
-        The list of ``Entry`` objects contained in the given file.
-    """
-    with open(file) as fh:
-        return [parse_entry(line.rstrip()) for line in fh if line.strip()]
+        Returns:
+            The list of ``Entry`` objects contained in the given file.
+        """
+        with open(file) as fh:
+            return cls(Entry(line.rstrip()) for line in fh if line.strip())
