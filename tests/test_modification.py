@@ -1,12 +1,13 @@
 import penelopise
 
 
-def test_noop_identical():
+def test_noop_identical(monkeypatch):
     """Text changes should invalidate computed properties.
 
     This abuses ``Entry`` in a bad way, but it is a quick way to see that we’re
     avoiding expensive nad unnecessary invalidation of properties.
     """
+    monkeypatch.delattr(penelopise.Entry, "contexts")
     e = penelopise.Entry("example")
     e.contexts = True  # type: ignore
     e.text = e.text
