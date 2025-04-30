@@ -53,6 +53,13 @@ class Entry:
     def __repr__(self) -> str:
         return f"{self.__class__.__qualname__}({self.text!r})"
 
+    def __setattr__(self, name, value):
+        if isinstance(
+            getattr(type(self), name, None), functools.cached_property
+        ):
+            raise AttributeError(f"Cannot set attribute '{name}'.")
+        super().__setattr__(name, value)
+
     @property
     def text(self) -> str:
         return self._text
