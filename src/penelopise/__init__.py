@@ -1,6 +1,5 @@
 """penelopise - Basic parsing for ``todo.txt`` files."""
 
-import dataclasses
 import datetime
 import enum
 import functools
@@ -39,7 +38,6 @@ group tasks under a common goal or initiative.
 """
 
 
-@dataclasses.dataclass
 @functools.total_ordering
 class Entry:
     """Represent a task.
@@ -49,53 +47,88 @@ class Entry:
     projects.
     """
 
-    text: str
-    complete: bool = dataclasses.field(default=False, init=False)
-    completion_date: datetime.date | None = dataclasses.field(
-        default=None, init=False
-    )
-    creation_date: datetime.date | None = dataclasses.field(
-        default=None, init=False
-    )
-    priority: Priority | None = dataclasses.field(default=None, init=False)
-    contexts: list[Context] = dataclasses.field(
-        default_factory=list, init=False
-    )
-    projects: list[Project] = dataclasses.field(
-        default_factory=list, init=False
-    )
-    attrs: dict[str, str | datetime.date] = dataclasses.field(
-        default_factory=dict, init=False
-    )
+    def __init__(self, text: str) -> None:
+        self._text = text
 
-    def __post_init__(self) -> None:
-        """Parse a singular task string."""
-        if m := re.match(
-            rf"x (?:\([A-Z]\) )?(?:({_ISO_DATE}) (?: {_ISO_DATE})?)?", self.text
+    def __repr__(self) -> str:
+        return f"{self.__class__.__qualname__}({self.text!r})"
+
+    def __setattr__(self, name, value):
+        if isinstance(
+            getattr(type(self), name, None), functools.cached_property
         ):
-            self.complete = True
-            if m.lastindex:
-                self.completion_date = datetime.date.fromisoformat(m.group(1))
-        if m := re.match(r"(?:x )?\(([A-Z])\) ", self.text):
-            self.priority = Priority[m.group(1)]
+            raise AttributeError(f"Cannot set attribute '{name}'.")
+        super().__setattr__(name, value)
+
+    @property
+    def text(self) -> str:
+        return self._text
+
+    @text.setter
+    def text(self, value: str) -> None:
+        if value != self._text:
+            self._text = value
+            for attr in (
+                "complete",
+                "completion_date",
+                "creation_date",
+                "priority",
+                "contexts",
+                "projects",
+                "attrs",
+            ):
+                self.__dict__.pop(attr, None)
+
+    @functools.cached_property
+    def complete(self) -> bool:
+        return self.text.startswith("x ")
+
+    @functools.cached_property
+    def completion_date(self) -> datetime.date | None:
+        if m := re.match(
+            rf"x (?:\([A-Z]\) )?(?:({_ISO_DATE})(?: {_ISO_DATE})?)?", self.text
+        ):
+            return datetime.date.fromisoformat(m.group(1))
+        return None
+
+    @functools.cached_property
+    def creation_date(self) -> datetime.date | None:
         if m := re.match(
             rf"(?:x {_ISO_DATE} |\([A-Z]\) )?({_ISO_DATE}) ", self.text
         ):
-            self.creation_date = datetime.date.fromisoformat(m.group(1))
-        for t, v in re.findall(r"\B([@\+])(\S+)\b", self.text):
-            if t == "@":
-                self.contexts.append(Context(v))
-            else:
-                self.projects.append(Project(v))
+            return datetime.date.fromisoformat(m.group(1))
+        else:
+            return None
+
+    @functools.cached_property
+    def priority(self) -> Priority | None:
+        if m := re.match(r"(?:x )?\(([A-Z])\) ", self.text, re.ASCII):
+            return Priority[m.group(1)]
+        elif m := re.search(r"\bpri:([A-Z])\b", self.text):
+            return Priority[m.group(1)]
+        else:
+            return None
+
+    @functools.cached_property
+    def contexts(self) -> list[Context]:
+        return [Context(v) for v in re.findall(r"\B@(\S+)\b", self.text)]
+
+    @functools.cached_property
+    def projects(self) -> list[Project]:
+        return [Project(v) for v in re.findall(r"\B\+(\S+)\b", self.text)]
+
+    @functools.cached_property
+    def attrs(self) -> dict[str, str | datetime.date]:
+        d: dict[str, str | datetime.date] = {}
         for k, v in re.findall(r"([^\s:]+):([^\s:]+)", self.text):
             if k == "pri":
-                self.priority = Priority[v]
-            else:
-                try:
-                    v = datetime.date.fromisoformat(v)
-                except ValueError:
-                    pass
-                self.attrs[k] = v
+                continue
+            try:
+                v = datetime.date.fromisoformat(v)
+            except ValueError:
+                pass
+            d[k] = v
+        return d
 
     def __eq__(self, other):
         if not hasattr(other, "text"):
