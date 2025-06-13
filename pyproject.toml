@@ -49,6 +49,7 @@ addopts = [
   "--cov=penelopise",
   "--import-mode=importlib",
 ]
+testpaths = ["tests/"]
 
 [tool.ruff]
 line-length = 80
