@@ -81,7 +81,7 @@ class Entry:
     """
 
     def __init__(self, text: str) -> None:
-        self._text = text
+        self._text: str = text
 
     def __repr__(self) -> str:
         return f"{self.__class__.__qualname__}({self.text!r})"
