@@ -12,16 +12,49 @@ import typing
 # descend in to date parsing mode.
 _ISO_DATE = r"\d{4}-\d{2}-\d{2}"
 
-Priority = enum.IntEnum(
-    "Priority", "Z Y X W V U T S R Q P O N M L K J I H G F E D C B A"
-)
-Priority.__doc__ = """Enumeration for representing task priority levels.
 
-The ``todo.txt`` specification declares priorities to be any uppercase ASCII
-character.  Much of the tooling around the format, however, special cases the
-characters ``A``, ``B``, and ``C`` in to a sort of high, medium, and low
-arrangement respectively.
-"""
+class Priority(enum.IntEnum):  # ruff: disable=E741
+    """Enumeration for representing task priority levels.
+
+    The ``todo.txt`` specification declares priorities to be any uppercase ASCII
+    character.  Much of the tooling around the format, however, special cases the
+    characters ``A``, ``B``, and ``C`` in to a sort of high, medium, and low
+    arrangement respectively.
+    """
+
+    # This *awful* block exists because if we use the dynamic interface for
+    # IntEnum setup then we can't use the typechecker to guarantee our usage at
+    # call sites.
+    #
+    # The one good thing about this method is that it reminds us how useful
+    # vim's "g C-x" can be when combined with nrformats=alpha.
+    Z = enum.auto()  # NoQA: E741
+    Y = enum.auto()  # NoQA: E741
+    X = enum.auto()  # NoQA: E741
+    W = enum.auto()  # NoQA: E741
+    V = enum.auto()  # NoQA: E741
+    U = enum.auto()  # NoQA: E741
+    T = enum.auto()  # NoQA: E741
+    S = enum.auto()  # NoQA: E741
+    R = enum.auto()  # NoQA: E741
+    Q = enum.auto()  # NoQA: E741
+    P = enum.auto()  # NoQA: E741
+    O = enum.auto()  # NoQA: E741
+    N = enum.auto()  # NoQA: E741
+    M = enum.auto()  # NoQA: E741
+    L = enum.auto()  # NoQA: E741
+    K = enum.auto()  # NoQA: E741
+    J = enum.auto()  # NoQA: E741
+    I = enum.auto()  # NoQA: E741
+    H = enum.auto()  # NoQA: E741
+    G = enum.auto()  # NoQA: E741
+    F = enum.auto()  # NoQA: E741
+    E = enum.auto()  # NoQA: E741
+    D = enum.auto()  # NoQA: E741
+    C = enum.auto()  # NoQA: E741
+    B = enum.auto()  # NoQA: E741
+    A = enum.auto()  # NoQA: E741
+
 
 Context = typing.NewType("Context", str)
 """Represent a context associated with a task.
