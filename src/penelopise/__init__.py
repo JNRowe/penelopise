@@ -80,13 +80,13 @@ class Entry:
     projects.
     """
 
-    def __init__(self, text: str) -> None:
+    def __init__(self, text: str, /) -> None:
         self._text: str = text
 
     def __repr__(self) -> str:
         return f"{self.__class__.__qualname__}({self.text!r})"
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name, value, /):
         if isinstance(
             getattr(type(self), name, None), functools.cached_property
         ):
@@ -98,7 +98,7 @@ class Entry:
         return self._text
 
     @text.setter
-    def text(self, value: str) -> None:
+    def text(self, value: str, /) -> None:
         if value != self._text:
             self._text = value
             for attr in (
@@ -163,12 +163,12 @@ class Entry:
             d[k] = v
         return d
 
-    def __eq__(self, other):
+    def __eq__(self, other, /):
         if not hasattr(other, "text"):
             return NotImplemented
         return self.text == other.text
 
-    def __lt__(self, other):
+    def __lt__(self, other, /):
         if not hasattr(other, "priority"):
             return NotImplemented
         if self.priority and other.priority:
