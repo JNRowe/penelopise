@@ -29,8 +29,10 @@ classifiers = [
 ]
 
 [project.urls]
-Documentation = "https://jnrowe.github.io/penelopise/"
-"Source code" = "https://github.com/JNRowe/penelopise"
+homepage = "https://github.com/JNRowe/penelopise"
+documentation = "https://jnrowe.github.io/penelopise/"
+source = "https://github.com/JNRowe/penelopise"
+issues = "https://github.com/JNRowe/penelopise/issues"
 
 [build-system]
 requires = ["hatchling"]
