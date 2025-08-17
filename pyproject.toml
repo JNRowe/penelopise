@@ -8,24 +8,24 @@ license = "GPL-3.0-or-later"
 authors = [{ name = "James Rowe", email = "jnrowe@gmail.com" }]
 keywords = ["todo.txt"]
 classifiers = [
-  "Development Status :: 3 - Alpha",
-  "Intended Audience :: Developers",
-  "License :: DFSG approved",
-  "License :: OSI Approved",
-  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
-  "Natural Language :: English",
-  "Operating System :: OS Independent",
-  "Programming Language :: Python",
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.13",
-  "Topic :: File Formats",
-  "Topic :: Software Development",
-  "Topic :: Software Development :: Libraries",
-  "Topic :: Software Development :: Libraries :: Python Modules",
-  "Topic :: Text Processing",
-  "Topic :: Text Processing :: Filters",
-  "Topic :: Text Processing :: Markup",
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: DFSG approved",
+    "License :: OSI Approved",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: File Formats",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing",
+    "Topic :: Text Processing :: Filters",
+    "Topic :: Text Processing :: Markup",
 ]
 
 [project.urls]
@@ -43,11 +43,11 @@ lint = ["ruff>=0.4"]
 
 [tool.pytest.ini_options]
 addopts = [
-  "--cov-append",
-  "--cov-branch",
-  "--cov-report=term-missing:skip-covered",
-  "--cov=penelopise",
-  "--import-mode=importlib",
+    "--cov-append",
+    "--cov-branch",
+    "--cov-report=term-missing:skip-covered",
+    "--cov=penelopise",
+    "--import-mode=importlib",
 ]
 testpaths = ["tests/"]
 
