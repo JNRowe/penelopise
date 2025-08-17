@@ -156,6 +156,8 @@ class Entry:
         for k, v in re.findall(r"([^\s:]+):([^\s:]+)", self.text):
             if k == "pri":
                 continue
+            if k in d:
+                raise KeyError(f"Duplicate key {k}")
             try:
                 v = datetime.date.fromisoformat(v)
             except ValueError:

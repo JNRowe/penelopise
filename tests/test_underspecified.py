@@ -25,3 +25,21 @@ def test_completed_with_priority(input_):
 
 # }}}2
 # }}}
+
+
+@pytest.mark.parametrize(
+    "input_",
+    [
+        "duplicate key:value1 key:value2",
+        "duplicate datetime:2025-08-16 datetime:2025-08-17",
+    ],
+)
+def test_duplicate_attr_keys(input_: str):
+    """Test parsing of tasks that have duplicate keys.
+
+    The documentation has no consideration for duplicate metadata keys.  In the
+    wild, I've never seen a file that relies on the behaviour.
+    """
+    parsed = penelopise.Entry(input_)
+    with pytest.raises(KeyError, match="Duplicate key"):
+        _ = parsed.attrs
