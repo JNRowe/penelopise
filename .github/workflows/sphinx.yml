@@ -1,10 +1,6 @@
 name: Build Sphinx documentation
 
 on:
-  pull_request:
-    paths:
-      - "doc/**"
-      - "pyproject.toml"
   push:
     paths:
       - "doc/**"
