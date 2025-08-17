@@ -35,8 +35,8 @@ source = "https://github.com/JNRowe/penelopise"
 issues = "https://github.com/JNRowe/penelopise/issues"
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.8.9,<0.9.0"]
+build-backend = "uv_build"
 
 [dependency-groups]
 dev = ["pytest>=8.0", "pytest-cov>=6.1"]
