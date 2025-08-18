@@ -8,39 +8,42 @@ import pytest
 import penelopise
 
 TEST_DATA = [
-    "(A) Thank Mom for the meatballs @phone",
-    "(B) Schedule Goodwill pickup +GarageSale @phone",
-    "Post signs around the neighborhood +GarageSale",
-    "@GroceryStore Eskimo pies",
+    (
+        "(A) Thank Mom for the meatballs @phone",
+        {
+            "priority": penelopise.Priority.A,
+            "contexts": ["phone"],
+        },
+    ),
+    (
+        "(B) Schedule Goodwill pickup +GarageSale @phone",
+        {
+            "priority": penelopise.Priority.B,
+            "contexts": ["phone"],
+            "projects": ["GarageSale"],
+        },
+    ),
+    (
+        "Post signs around the neighborhood +GarageSale",
+        {
+            "projects": ["GarageSale"],
+        },
+    ),
+    (
+        "@GroceryStore Eskimo pies",
+        {
+            "contexts": ["GroceryStore"],
+        },
+    ),
 ]
-"""List of example ``todo.txt`` entries used as test input data extracted from
-the documentation_.
+"""``todo.txt`` examples extracted from the official documentation_.
 
 .. _documentation: https://github.com/todotxt/todo.txt
 """
 
-TEST_RESULTS = [
-    {
-        "priority": penelopise.Priority.A,
-        "contexts": ["phone"],
-    },
-    {
-        "priority": penelopise.Priority.B,
-        "contexts": ["phone"],
-        "projects": ["GarageSale"],
-    },
-    {
-        "projects": ["GarageSale"],
-    },
-    {
-        "contexts": ["GroceryStore"],
-    },
-]
-"""List of expected parsed results corresponding to ``TEST_DATA``."""
-
 
 # Incomplete Tasks {{{
-@pytest.mark.parametrize("input_, expected", zip(TEST_DATA, TEST_RESULTS))
+@pytest.mark.parametrize("input_, expected", TEST_DATA)
 def test_basic(input_, expected):
     """Test basic parsing of entries and comparison with expected results."""
     parsed = penelopise.Entry(input_)
@@ -54,14 +57,14 @@ def test_basic(input_, expected):
                 raise ValueError(f"Unknown property {k}")
 
 
-@pytest.mark.parametrize("input_, expected", zip(TEST_DATA, TEST_RESULTS))
+@pytest.mark.parametrize("input_, expected", TEST_DATA)
 def test_context_filter(input_, expected):
     """Test filtering entries by context."""
     parsed = penelopise.Entry(input_)
     assert len(parsed.contexts) == len(expected.get("contexts", []))
 
 
-@pytest.mark.parametrize("input_, expected", zip(TEST_DATA, TEST_RESULTS))
+@pytest.mark.parametrize("input_, expected", TEST_DATA)
 def test_project_filter(input_, expected):
     """Test filtering entries by project."""
     parsed = penelopise.Entry(input_)
