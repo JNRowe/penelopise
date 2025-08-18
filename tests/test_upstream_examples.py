@@ -180,5 +180,12 @@ def test_completion_date():
     assert parsed.completion_date == datetime.date(2011, 3, 2)
 
 
+def test_completion_with_priority():
+    """Test parsing of completion date in completed tasks."""
+    parsed = penelopise.Entry("x Complete pri:B")
+    assert parsed.complete is True
+    assert parsed.priority == penelopise.Priority.B
+
+
 # }}}2
 # }}}
