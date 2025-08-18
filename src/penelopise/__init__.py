@@ -4,6 +4,7 @@ import datetime
 import enum
 import functools
 import re
+import string
 import typing
 
 
@@ -137,7 +138,9 @@ class Entry:
     def priority(self) -> Priority | None:
         if m := re.match(r"(?:x )?\(([A-Z])\) ", self.text, re.ASCII):
             return Priority[m.group(1)]
-        elif m := re.search(r"\bpri:([A-Z])\b", self.text):
+        elif m := re.search(r"\bpri:([^\s:]+)", self.text):
+            if m.group(1) not in string.ascii_uppercase:
+                raise ValueError(f"Invalid priority value {m.group(1)}")
             return Priority[m.group(1)]
         else:
             return None
@@ -155,6 +158,8 @@ class Entry:
         d: dict[str, str | datetime.date] = {}
         for k, v in re.findall(r"([^\s:]+):([^\s:]+)", self.text):
             if k == "pri":
+                if v not in string.ascii_uppercase:
+                    raise ValueError(f"Invalid priority value {v}")
                 continue
             if k in d:
                 raise KeyError(f"Duplicate key {k}")
