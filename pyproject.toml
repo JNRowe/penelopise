@@ -50,8 +50,12 @@ addopts = [
     "--cov-report=term-missing:skip-covered",
     "--cov=penelopise",
     "--import-mode=importlib",
+    "--pythonwarnings=error",
+    "--strict-config",
+    "--strict-markers",
 ]
 testpaths = ["tests/"]
+xfail_strict = true
 
 [tool.ruff]
 line-length = 80
