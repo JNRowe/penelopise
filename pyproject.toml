@@ -54,6 +54,7 @@ addopts = [
     "--strict-config",
     "--strict-markers",
 ]
+minversion = "8.0"
 testpaths = ["tests/"]
 xfail_strict = true
 
