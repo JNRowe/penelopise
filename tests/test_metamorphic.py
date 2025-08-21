@@ -3,6 +3,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 import penelopise
+from .strategies import todo_testable
 
 keyword = st.text(
     alphabet=st.characters(min_codepoint=ord("a"), max_codepoint=ord("z")),
@@ -11,14 +12,14 @@ keyword = st.text(
 
 
 @pytest.mark.parametrize("attr", ["context", "project"])
-@given(st.text(), st.data())
-def test_add_attribute(attr, base_entry, data):
+@given(todo_testable(), st.data())
+def test_add_attribute(attr, todo_testable, data):
     """A metamorphic test for adding an attribute to a ``Entry``."""
-    e1 = penelopise.Entry(base_entry)
-    e1_attrs = getattr(e1, f"{attr}s")
+    text, known = todo_testable
+    known_attrs = getattr(known, f"{attr}s")
 
     new_item = ("@" if attr == "context" else "+") + data.draw(keyword)
-    e2 = penelopise.Entry(f"{base_entry} {new_item}")
-    e2_attrs = getattr(e2, f"{attr}s")
+    e = penelopise.Entry(f"{text} {new_item}")
+    e_attrs = getattr(e, f"{attr}s")
 
-    assert set(e2_attrs) == set(e1_attrs) | {new_item[1:]}
+    assert set(e_attrs) == set(known_attrs) | {new_item[1:]}

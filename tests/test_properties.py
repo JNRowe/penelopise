@@ -2,15 +2,9 @@ import datetime
 import typing
 
 from hypothesis import given
-from hypothesis import strategies as st
 
 import penelopise
-
-
-# A weak for generating todo.txt entries.  Note: There are definitely cases this
-# *could* produce that would break tests, but right now I just want to get the
-# scaffolding in place.
-entries = st.text()
+from .strategies import todo_testable
 
 
 def wrapped_type(type_) -> typing.Type:
@@ -24,23 +18,26 @@ def wrapped_type(type_) -> typing.Type:
     return type_.__supertype__
 
 
-@given(entries)
-def test_text_property(text):
+@given(todo_testable())
+def test_text_property(todo_testable):
     """Test that the text property is always a string."""
+    text, _ = todo_testable
     assert isinstance(penelopise.Entry(text).text, str)
 
 
-@given(entries)
-def test_priority_property(text):
+@given(todo_testable())
+def test_priority_property(todo_testable):
     """Test that the priority property is always a Priority object or None."""
+    text, _ = todo_testable
     assert isinstance(
         penelopise.Entry(text).priority, (penelopise.Priority, type(None))
     )
 
 
-@given(entries)
-def test_contexts_property(text):
+@given(todo_testable())
+def test_contexts_property(todo_testable):
     """Test that the contexts property is always a list of strings."""
+    text, _ = todo_testable
     entry = penelopise.Entry(text)
     assert isinstance(entry.contexts, list)
     assert all(
@@ -48,9 +45,10 @@ def test_contexts_property(text):
     )
 
 
-@given(entries)
-def test_projects_property(text):
+@given(todo_testable())
+def test_projects_property(todo_testable):
     """Test that the projects property is always a list of strings."""
+    text, _ = todo_testable
     entry = penelopise.Entry(text)
     assert isinstance(entry.projects, list)
     assert all(
@@ -58,9 +56,10 @@ def test_projects_property(text):
     )
 
 
-@given(entries)
-def test_completion_date_property(text):
+@given(todo_testable())
+def test_completion_date_property(todo_testable):
     """Test that the completion_date property is always a date or None."""
+    text, _ = todo_testable
     assert isinstance(
         penelopise.Entry(text).completion_date, (datetime.date, type(None))
     )
