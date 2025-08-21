@@ -50,18 +50,10 @@ def todo_data(draw) -> TodoData:
         if has_priority and not is_complete
         else None
     )
-    creation_date = draw(
-        st.dates(
-            min_value=datetime.date(1970, 1, 1),
-            max_value=datetime.date(2038, 1, 18),
-        )
-    )
-    completion_date = draw(
-        st.dates(
-            min_value=datetime.date(1970, 1, 1),
-            max_value=datetime.date(2038, 1, 18),
-        )
-    )
+    # These dates are excessively large, but the spec only specifies YYYY-MM-DD
+    # so we should test acceptable values
+    creation_date = draw(st.dates(min_value=datetime.date(1000, 1, 1)))
+    completion_date = draw(st.dates(min_value=datetime.date(1000, 1, 1)))
 
     projects = draw(st.sets(safe_tags))
     contexts = draw(st.sets(safe_tags))
