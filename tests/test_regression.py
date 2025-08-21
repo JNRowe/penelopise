@@ -3,6 +3,12 @@ import pytest
 import penelopise
 
 
+def test_complete_without_date():
+    """Test that completion without associated date works."""
+    parsed = penelopise.Entry("x no date")
+    assert parsed.completion_date is None
+
+
 def test_invalid_pri_value():
     """Test that a context at the start of a line is parsed correctly."""
     parsed = penelopise.Entry("invalid pri:value")

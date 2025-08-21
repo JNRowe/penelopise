@@ -120,7 +120,7 @@ class Entry:
     @functools.cached_property
     def completion_date(self) -> datetime.date | None:
         if m := re.match(
-            rf"x (?:\([A-Z]\) )?(?:({_ISO_DATE})(?: {_ISO_DATE})?)?", self.text
+            rf"x (?:\([A-Z]\) )?(?:({_ISO_DATE})(?: {_ISO_DATE})?)", self.text
         ):
             return datetime.date.fromisoformat(m.group(1))
         return None
