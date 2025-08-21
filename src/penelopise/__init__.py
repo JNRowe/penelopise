@@ -120,7 +120,18 @@ class Entry:
     @functools.cached_property
     def completion_date(self) -> datetime.date | None:
         if m := re.match(
-            rf"x (?:\([A-Z]\) )?(?:({_ISO_DATE})(?: {_ISO_DATE})?)", self.text
+            rf"""
+            x                    # Completed marker
+            \s
+            (?:\([A-Z]\)\s)?     # Optional priority
+            (?:
+                (
+                    {_ISO_DATE}  # Completion date
+                )
+            )
+            """,
+            self.text,
+            re.VERBOSE,
         ):
             return datetime.date.fromisoformat(m.group(1))
         return None
@@ -128,7 +139,23 @@ class Entry:
     @functools.cached_property
     def creation_date(self) -> datetime.date | None:
         if m := re.match(
-            rf"(?:x {_ISO_DATE} |\([A-Z]\) )?({_ISO_DATE}) ", self.text
+            rf"""
+            (?:
+                x            # Completed marker
+                \s
+                {_ISO_DATE}  # Completion date
+                \s
+                |
+                \([A-Z]\)    # Priority
+                \s
+            )?
+            (
+                {_ISO_DATE}  # Creation date
+            )
+            \s
+            """,
+            self.text,
+            re.VERBOSE,
         ):
             return datetime.date.fromisoformat(m.group(1))
         else:
@@ -136,9 +163,27 @@ class Entry:
 
     @functools.cached_property
     def priority(self) -> Priority | None:
-        if m := re.match(r"(?:x )?\(([A-Z])\) ", self.text, re.ASCII):
+        if m := re.match(
+            r"""
+            (?:x\s)?     # Optional completed marker
+            \(([A-Z])\)  # Priority
+            \s           # Trailing space
+            """,
+            self.text,
+            re.VERBOSE | re.ASCII,
+        ):
             return Priority[m.group(1)]
-        elif m := re.search(r"\bpri:([^\s:]+)", self.text):
+        elif m := re.search(
+            r"""
+            \b           # Word boundary
+            pri:         # Priority key
+            (
+                [^\s:]+  # Anything that isn't whitespace or a colon
+            )
+            """,
+            self.text,
+            re.VERBOSE,
+        ):
             if m.group(1) not in string.ascii_uppercase:
                 raise ValueError(f"Invalid priority value {m.group(1)}")
             return Priority[m.group(1)]
@@ -147,19 +192,57 @@ class Entry:
 
     @functools.cached_property
     def contexts(self) -> list[Context]:
-        return [Context(v) for v in re.findall(r"\B@(\S+)\b", self.text)]
+        return [
+            Context(v)
+            for v in re.findall(
+                r"""
+                \B       # Not a word boundary
+                @        # Context marker
+                (
+                    \S+  # Anything that isn't whitespace
+                )
+                \b       # Word boundary
+                """,
+                self.text,
+                re.VERBOSE,
+            )
+        ]
 
     @functools.cached_property
     def projects(self) -> list[Project]:
-        return [Project(v) for v in re.findall(r"\B\+(\S+)\b", self.text)]
+        return [
+            Project(v)
+            for v in re.findall(
+                r"""
+                \B       # Not a word boundary
+                \+       # Project marker
+                (
+                    \S+  # Anything that isn't whitespace
+                )
+                \b       # Word boundary
+                """,
+                self.text,
+                re.VERBOSE,
+            )
+        ]
 
     @functools.cached_property
     def attrs(self) -> dict[str, str | datetime.date]:
         d: dict[str, str | datetime.date] = {}
-        for k, v in re.findall(r"([^\s:]+):([^\s:]+)", self.text):
+        for k, v in re.findall(
+            r"""
+            (
+                [^\s:]+  # Anything that isn't whitespace or a colon
+            )
+            :            # Separator
+            (
+                [^\s:]+  # Anything that isn't whitespace or a colon
+            )
+            """,
+            self.text,
+            re.VERBOSE,
+        ):
             if k == "pri":
-                if v not in string.ascii_uppercase:
-                    raise ValueError(f"Invalid priority value {v}")
                 continue
             if k in d:
                 raise KeyError(f"Duplicate key {k}")
