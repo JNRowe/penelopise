@@ -10,7 +10,7 @@ def test_complete_without_date():
 
 
 def test_invalid_pri_value():
-    """Test that a context at the start of a line is parsed correctly."""
+    """Test that an invalid priority keyword raises an error."""
     parsed = penelopise.Entry("invalid pri:value")
     with pytest.raises(ValueError, match="Invalid priority"):
         assert parsed.priority
