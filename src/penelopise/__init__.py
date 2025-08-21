@@ -4,13 +4,8 @@ import datetime
 import enum
 import functools
 import re
+import string
 import typing
-
-
-# Regular expression pattern for matching a string that *may* be an ISO-8601
-# date.  This clearly doesn't validate a string, but gets us close enough to
-# descend in to date parsing mode.
-_ISO_DATE = r"\d{4}-\d{2}-\d{2}"
 
 
 class Priority(enum.IntEnum):  # ruff: disable=E741
@@ -71,6 +66,50 @@ group tasks under a common goal or initiative.
 """
 
 
+def _make_metadata_re(symbol: str) -> re.Pattern[str]:
+    return re.compile(
+        rf"""
+        \B                   # Not a word boundary
+        {re.escape(symbol)}
+        (
+            \S+              # Anything that isn't whitespace
+        )
+        \b                   # Word boundary
+        """,
+        re.VERBOSE,
+    )
+
+
+# Regular expression pattern for matching a string that *may* be an ISO-8601
+# date.  This clearly doesn't validate a string, but gets us close enough to
+# descend in to date parsing mode.
+_ISO_DATE = r"\d{4}-\d{2}-\d{2}"
+
+_CONTEXT_RE = _make_metadata_re("@")
+_PROJECT_RE = _make_metadata_re("+")
+
+
+_PRIORITY_RE = re.compile(
+    r"""
+    (?:
+        ^
+        (?:x\s)?     # Optional completed marker
+        \(([A-Z])\)  # Priority
+        \s           # Trailing space
+    )
+    |
+    (?:
+        \b
+        pri:         # Priority key
+        (
+            [^\s:]+  # Anything that isn't whitespace or a colon
+        )
+    )
+    """,
+    re.VERBOSE | re.ASCII,
+)
+
+
 @functools.total_ordering
 class Entry:
     """Represent a task.
@@ -119,7 +158,18 @@ class Entry:
     @functools.cached_property
     def completion_date(self) -> datetime.date | None:
         if m := re.match(
-            rf"x (?:\([A-Z]\) )?(?:({_ISO_DATE})(?: {_ISO_DATE})?)?", self.text
+            rf"""
+            x                    # Completed marker
+            \s
+            (?:\([A-Z]\)\s)?     # Optional priority
+            (?:
+                (
+                    {_ISO_DATE}  # Completion date
+                )
+            )
+            """,
+            self.text,
+            re.VERBOSE,
         ):
             return datetime.date.fromisoformat(m.group(1))
         return None
@@ -127,7 +177,23 @@ class Entry:
     @functools.cached_property
     def creation_date(self) -> datetime.date | None:
         if m := re.match(
-            rf"(?:x {_ISO_DATE} |\([A-Z]\) )?({_ISO_DATE}) ", self.text
+            rf"""
+            (?:
+                x            # Completed marker
+                \s
+                {_ISO_DATE}  # Completion date
+                \s
+                |
+                \([A-Z]\)    # Priority
+                \s
+            )?
+            (
+                {_ISO_DATE}  # Creation date
+            )
+            \s
+            """,
+            self.text,
+            re.VERBOSE,
         ):
             return datetime.date.fromisoformat(m.group(1))
         else:
@@ -135,25 +201,37 @@ class Entry:
 
     @functools.cached_property
     def priority(self) -> Priority | None:
-        if m := re.match(r"(?:x )?\(([A-Z])\) ", self.text, re.ASCII):
-            return Priority[m.group(1)]
-        elif m := re.search(r"\bpri:([A-Z])\b", self.text):
-            return Priority[m.group(1)]
-        else:
-            return None
+        if m := _PRIORITY_RE.search(self.text):
+            priority_val = m.group(1) or m.group(2)
+            if priority_val not in string.ascii_uppercase:
+                raise ValueError(f"Invalid priority value {priority_val}")
+            return Priority[priority_val]
+        return None
 
     @functools.cached_property
     def contexts(self) -> list[Context]:
-        return [Context(v) for v in re.findall(r"\B@(\S+)\b", self.text)]
+        return [Context(v) for v in _CONTEXT_RE.findall(self.text)]
 
     @functools.cached_property
     def projects(self) -> list[Project]:
-        return [Project(v) for v in re.findall(r"\B\+(\S+)\b", self.text)]
+        return [Project(v) for v in _PROJECT_RE.findall(self.text)]
 
     @functools.cached_property
     def attrs(self) -> dict[str, str | datetime.date]:
         d: dict[str, str | datetime.date] = {}
-        for k, v in re.findall(r"([^\s:]+):([^\s:]+)", self.text):
+        for k, v in re.findall(
+            r"""
+            (
+                [^\s:]+  # Anything that isn't whitespace or a colon
+            )
+            :            # Separator
+            (
+                [^\s:]+  # Anything that isn't whitespace or a colon
+            )
+            """,
+            self.text,
+            re.VERBOSE,
+        ):
             if k == "pri":
                 continue
             if k in d:
